@@ -1146,13 +1146,13 @@ query ($number: Int!, $name: String!, $owner: String!) {
 }
 `;
 
-module.exports = (octokit, number, repo_owner, repo_name) => {
-  const variables = { number: number, owner: repo_owner, name: repo_name};
+module.exports = (octokit, number, repoOwner, repoName) => {
+  const variables = { number, owner: repoOwner, name: repoName };
   return octokit
     .graphql(PR_BY_ID_QUERY, variables)
     .then(parsePullRequest)
     .catch((error) => {
-      const msg = `Error fetching pull requests with id "${number} for ${repo_owner}/${repo_name}"`;
+      const msg = `Error fetching pull requests with id "${number} for ${repoOwner}/${repoName}"`;
       throw new Error(`${msg}. Error: ${error}`);
     });
 };
@@ -30809,7 +30809,6 @@ const getPullRequests = async (params) => {
   if (results.length < limit) return results;
 
   const last = results[results.length - 1].cursor;
-  console.log('getting last PR')
   return results.concat(await getPullRequests({ ...params, after: last }));
 };
 
@@ -30818,7 +30817,7 @@ module.exports = ({
   org,
   repos,
   startDate,
-  itemsPerPage = 100
+  itemsPerPage = 100,
 }) => {
   const search = buildQuery({ org, repos, startDate });
   return getPullRequests({ octokit, search, limit: itemsPerPage });
@@ -31122,7 +31121,6 @@ const buildPayload = __webpack_require__(108);
 module.exports = async ({
   org,
   repos,
-  core,
   webhook,
   reviewers,
   periodLength,
@@ -31161,6 +31159,7 @@ module.exports = async ({
 
 const core = __webpack_require__(470);
 const github = __webpack_require__(469);
+const { split } = __webpack_require__(557);
 const { subtractDaysToDate } = __webpack_require__(353);
 const { Telemetry } = __webpack_require__(530);
 const { fetchPullRequestById } = __webpack_require__(162);
@@ -31175,7 +31174,6 @@ const {
   postSlackMessage,
   postWebhook,
 } = __webpack_require__(942);
-const { split } = __webpack_require__(557);
 
 const run = async (params) => {
   const {
@@ -31193,12 +31191,11 @@ const run = async (params) => {
     pullRequestId,
   } = params;
 
-  parts = split(currentRepo, "/");
+  const parts = split(currentRepo, '/');
 
   const pullRequest = pullRequestId
     ? await fetchPullRequestById(octokit, pullRequestId, parts[0], parts[1])
     : null;
-
 
   if (alreadyPublished(pullRequest)) {
     console.info('Skipping execution because stats are published already');
@@ -31252,11 +31249,10 @@ const run = async (params) => {
 module.exports = async (params) => {
   console.debug(`Params: ${JSON.stringify(params, null, 2)}`);
 
-  const { githubToken, org, repos } = params;
+  const { githubToken } = params;
   const octokit = github.getOctokit(githubToken);
-  const isSponsor = true
+  const isSponsor = true;
   const telemetry = new Telemetry({ core, isSponsor, telemetry: params.telemetry });
-  if (isSponsor) console.info('Thanks for sponsoring this project! 💙');
 
   try {
     telemetry.start(params);
@@ -32017,42 +32013,36 @@ module.exports = function httpAdapter(config) {
 /***/ 676:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-const {  upperCase, replace, toInteger } = __webpack_require__(557);
-const get = __webpack_require__(854);
+const { upperCase, replace, toInteger } = __webpack_require__(557);
 const execute = __webpack_require__(662);
 const { t } = __webpack_require__(781);
 
 const constCase = (str) => {
-  s = upperCase(str);
-  return replace(replace(s, '-', '_'), ' ', '_')
-}
+  const s = upperCase(str);
+  return replace(replace(s, '-', '_'), ' ', '_');
+};
 
 const parseArray = (value) => value.split(',');
 
 const getEnv = (env) => {
   const val = process.env[env];
   if (val) {
-    return val
+    return val;
   }
-  throw `${env} env var must be set!`
+  throw new Error(`${env} env var must be set!`);
 };
 
 const getEnvOrDefault = (env, def) => {
   const val = process.env[env];
   if (val) {
-    return val
+    return val;
   }
-  return def
+  return def;
 };
 
-const getInput = (param) => {
-  return getEnv(`PLUGIN_${constCase(param)}`);
-};
+const getInput = (param) => getEnv(`PLUGIN_${constCase(param)}`);
 
-const getInputOrDefault = (param, def) => {
-  return getEnvOrDefault(`PLUGIN_${constCase(param)}`, def);
-};
-
+const getInputOrDefault = (param, def) => getEnvOrDefault(`PLUGIN_${constCase(param)}`, def);
 
 const getPeriod = () => {
   const MAX_PERIOD_DATE = 365;
@@ -32066,9 +32056,9 @@ const getRepositories = (currentRepo) => {
 };
 
 const getBoolInput = (param) => {
-  val = getInputOrDefault(param, 'false');
+  const val = getInputOrDefault(param, 'false');
   return val === 'true';
-}
+};
 
 const getParams = () => {
   const currentRepo = getEnv('DRONE_REPO');
@@ -35672,7 +35662,6 @@ const splitInChunks = __webpack_require__(569);
 module.exports = async ({
   org,
   repos,
-  core,
   slack,
   isSponsor,
   reviewers,
@@ -37689,7 +37678,7 @@ const sendSuccess = __webpack_require__(389);
 const buildTracker = __webpack_require__(438);
 
 class Telemetry {
-  constructor({ core, isSponsor, telemetry }) {
+  constructor({ isSponsor, telemetry }) {
     this.useTelemetry = !isSponsor || telemetry;
     this.tracker = this.useTelemetry ? buildTracker() : null;
     if (!this.useTelemetry) console.debug('Telemetry disabled correctly');
