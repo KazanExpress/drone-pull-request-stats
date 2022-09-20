@@ -1,5 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
+const { split } = require('lodash');
 const { subtractDaysToDate } = require('./utils');
 const { Telemetry } = require('./services');
 const { fetchPullRequestById } = require('./fetchers');
@@ -14,7 +15,6 @@ const {
   postSlackMessage,
   postWebhook,
 } = require('./interactors');
-const { split } = require('lodash');
 
 const run = async (params) => {
   const {
@@ -32,12 +32,11 @@ const run = async (params) => {
     pullRequestId,
   } = params;
 
-  parts = split(currentRepo, "/");
+  const parts = split(currentRepo, '/');
 
   const pullRequest = pullRequestId
     ? await fetchPullRequestById(octokit, pullRequestId, parts[0], parts[1])
     : null;
-
 
   if (alreadyPublished(pullRequest)) {
     console.info('Skipping execution because stats are published already');
@@ -91,9 +90,9 @@ const run = async (params) => {
 module.exports = async (params) => {
   console.debug(`Params: ${JSON.stringify(params, null, 2)}`);
 
-  const { githubToken, org, repos } = params;
+  const { githubToken } = params;
   const octokit = github.getOctokit(githubToken);
-  const isSponsor = true
+  const isSponsor = true;
   const telemetry = new Telemetry({ core, isSponsor, telemetry: params.telemetry });
 
   try {

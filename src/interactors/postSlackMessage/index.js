@@ -6,7 +6,6 @@ const splitInChunks = require('./splitInChunks');
 module.exports = async ({
   org,
   repos,
-  core,
   slack,
   isSponsor,
   reviewers,

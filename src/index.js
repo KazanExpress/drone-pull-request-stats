@@ -1,39 +1,33 @@
-const {  upperCase, replace, toInteger } = require('lodash');
-const get = require('lodash.get');
+const { upperCase, replace, toInteger } = require('lodash');
 const execute = require('./execute');
 const { t } = require('./i18n');
 
 const constCase = (str) => {
-  s = upperCase(str);
-  return replace(replace(s, '-', '_'), ' ', '_')
-}
+  const s = upperCase(str);
+  return replace(replace(s, '-', '_'), ' ', '_');
+};
 
 const parseArray = (value) => value.split(',');
 
 const getEnv = (env) => {
   const val = process.env[env];
   if (val) {
-    return val
+    return val;
   }
-  throw `${env} env var must be set!`
+  throw new Error(`${env} env var must be set!`);
 };
 
 const getEnvOrDefault = (env, def) => {
   const val = process.env[env];
   if (val) {
-    return val
+    return val;
   }
-  return def
+  return def;
 };
 
-const getInput = (param) => {
-  return getEnv(`PLUGIN_${constCase(param)}`);
-};
+const getInput = (param) => getEnv(`PLUGIN_${constCase(param)}`);
 
-const getInputOrDefault = (param, def) => {
-  return getEnvOrDefault(`PLUGIN_${constCase(param)}`, def);
-};
-
+const getInputOrDefault = (param, def) => getEnvOrDefault(`PLUGIN_${constCase(param)}`, def);
 
 const getPeriod = () => {
   const MAX_PERIOD_DATE = 365;
@@ -47,9 +41,9 @@ const getRepositories = (currentRepo) => {
 };
 
 const getBoolInput = (param) => {
-  val = getInputOrDefault(param, 'false');
+  const val = getInputOrDefault(param, 'false');
   return val === 'true';
-}
+};
 
 const getParams = () => {
   const currentRepo = getEnv('DRONE_REPO');

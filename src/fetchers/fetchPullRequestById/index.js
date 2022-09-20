@@ -22,13 +22,13 @@ query ($number: Int!, $name: String!, $owner: String!) {
 }
 `;
 
-module.exports = (octokit, number, repo_owner, repo_name) => {
-  const variables = { number: number, owner: repo_owner, name: repo_name};
+module.exports = (octokit, number, repoOwner, repoName) => {
+  const variables = { number, owner: repoOwner, name: repoName };
   return octokit
     .graphql(PR_BY_ID_QUERY, variables)
     .then(parsePullRequest)
     .catch((error) => {
-      const msg = `Error fetching pull requests with id "${number} for ${repo_owner}/${repo_name}"`;
+      const msg = `Error fetching pull requests with id "${number} for ${repoOwner}/${repoName}"`;
       throw new Error(`${msg}. Error: ${error}`);
     });
 };

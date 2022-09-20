@@ -13,5 +13,8 @@
   },
   "globals": {
     "Promise": "readonly"
+  },
+  "rules": {
+    "no-console": "off"
   }
 }

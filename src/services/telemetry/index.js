@@ -4,7 +4,7 @@ const sendSuccess = require('./sendSuccess');
 const buildTracker = require('./buildTracker');
 
 class Telemetry {
-  constructor({ core, isSponsor, telemetry }) {
+  constructor({ isSponsor, telemetry }) {
     this.useTelemetry = !isSponsor || telemetry;
     this.tracker = this.useTelemetry ? buildTracker() : null;
     if (!this.useTelemetry) console.debug('Telemetry disabled correctly');

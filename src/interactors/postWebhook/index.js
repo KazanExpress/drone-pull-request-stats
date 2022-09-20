@@ -5,7 +5,6 @@ const buildPayload = require('./buildPayload');
 module.exports = async ({
   org,
   repos,
-  core,
   webhook,
   reviewers,
   periodLength,
