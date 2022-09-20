@@ -1,47 +1,79 @@
+const {  upperCase, replace, toInteger } = require('lodash');
 const get = require('lodash.get');
-const core = require('@actions/core');
-const github = require('@actions/github');
 const execute = require('./execute');
 const { t } = require('./i18n');
 
+const constCase = (str) => {
+  s = upperCase(str);
+  return replace(replace(s, '-', '_'), ' ', '_')
+}
+
 const parseArray = (value) => value.split(',');
+
+const getEnv = (env) => {
+  const val = process.env[env];
+  if (val) {
+    return val
+  }
+  throw `${env} env var must be set!`
+};
+
+const getEnvOrDefault = (env, def) => {
+  const val = process.env[env];
+  if (val) {
+    return val
+  }
+  return def
+};
+
+const getInput = (param) => {
+  return getEnv(`PLUGIN_${constCase(param)}`);
+};
+
+const getInputOrDefault = (param, def) => {
+  return getEnvOrDefault(`PLUGIN_${constCase(param)}`, def);
+};
+
 
 const getPeriod = () => {
   const MAX_PERIOD_DATE = 365;
-  const value = parseInt(core.getInput('period'), 10);
+  const value = parseInt(getInputOrDefault('period', `${MAX_PERIOD_DATE}`), 10);
   return Math.min(value, MAX_PERIOD_DATE);
 };
 
 const getRepositories = (currentRepo) => {
-  const input = core.getInput('repositories');
+  const input = getInputOrDefault('repositories', '');
   return input ? parseArray(input) : [currentRepo];
 };
 
-const getPrId = () => get(github, 'context.payload.pull_request.node_id');
+const getBoolInput = (param) => {
+  val = getInputOrDefault(param, 'false');
+  return val === 'true';
+}
 
 const getParams = () => {
-  const currentRepo = process.env.GITHUB_REPOSITORY;
-  const githubToken = core.getInput('github-token');
-  const personalToken = core.getInput('token') || githubToken;
+  const currentRepo = getEnv('DRONE_REPO');
+  const personalToken = getInput('github_token');
+  const githubToken = personalToken;
 
   return {
     currentRepo,
     githubToken,
     personalToken,
-    org: core.getInput('organization'),
+    org: getInputOrDefault('organization', null),
     repos: getRepositories(currentRepo),
-    sortBy: core.getInput('sort-by'),
-    publishAs: core.getInput('publish-as'),
+    sortBy: getInputOrDefault('sort-by', 'REVIEWS'),
+    publishAs: getInputOrDefault('publish-as', 'COMMENT'),
     periodLength: getPeriod(),
-    displayCharts: core.getBooleanInput('charts'),
-    disableLinks: core.getBooleanInput('disable-links'),
-    pullRequestId: getPrId(),
-    limit: parseInt(core.getInput('limit'), 10),
-    telemetry: core.getBooleanInput('telemetry'),
-    webhook: core.getInput('webhook'),
+    displayCharts: getBoolInput('charts'),
+    disableLinks: getBoolInput('disable-links'),
+    pullRequestId: toInteger(getEnv('DRONE_PULL_REQUEST')),
+    limit: parseInt(getInputOrDefault('limit', '0'), 10),
+    telemetry: getBoolInput('telemetry'),
+    webhook: getInputOrDefault('webhook', null),
     slack: {
-      webhook: core.getInput('slack-webhook'),
-      channel: core.getInput('slack-channel'),
+      webhook: getInputOrDefault('slack-webhook', null),
+      channel: getInputOrDefault('slack-channel', null),
     },
   };
 };
@@ -49,12 +81,11 @@ const getParams = () => {
 const run = async () => {
   try {
     await execute(getParams());
-    core.info(t('execution.logs.success'));
-    core.info(t('execution.logs.news'));
+    console.info(t('execution.logs.success'));
+    console.info(t('execution.logs.news'));
   } catch (error) {
-    core.debug(t('execution.errors.main', error));
-    core.debug(error.stack);
-    core.setFailed(error.message);
+    console.debug(t('execution.errors.main', error));
+    console.debug(error.stack);
   }
 };
 

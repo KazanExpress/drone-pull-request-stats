@@ -10,15 +10,16 @@ const {
   getReviewers,
   buildComment,
   setUpReviewers,
-  checkSponsorship,
   alreadyPublished,
   postSlackMessage,
   postWebhook,
 } = require('./interactors');
+const { split } = require('lodash');
 
 const run = async (params) => {
   const {
     org,
+    currentRepo,
     repos,
     limit,
     sortBy,
@@ -31,12 +32,15 @@ const run = async (params) => {
     pullRequestId,
   } = params;
 
+  parts = split(currentRepo, "/");
+
   const pullRequest = pullRequestId
-    ? await fetchPullRequestById(octokit, pullRequestId)
+    ? await fetchPullRequestById(octokit, pullRequestId, parts[0], parts[1])
     : null;
 
+
   if (alreadyPublished(pullRequest)) {
-    core.info('Skipping execution because stats are published already');
+    console.info('Skipping execution because stats are published already');
     return;
   }
 
@@ -46,10 +50,10 @@ const run = async (params) => {
     octokit: github.getOctokit(personalToken),
     startDate: subtractDaysToDate(new Date(), periodLength),
   });
-  core.info(`Found ${pulls.length} pull requests to analyze`);
+  console.info(`Found ${pulls.length} pull requests to analyze`);
 
   const reviewersRaw = getReviewers(pulls);
-  core.info(`Analyzed stats for ${reviewersRaw.length} pull request reviewers`);
+  console.info(`Analyzed stats for ${reviewersRaw.length} pull request reviewers`);
 
   const reviewers = setUpReviewers({
     limit,
@@ -59,12 +63,12 @@ const run = async (params) => {
   });
 
   const table = buildTable({ reviewers, disableLinks, displayCharts });
-  core.debug('Stats table built successfully');
+  console.debug('Stats table built successfully');
 
   const content = buildComment({
     table, periodLength, org, repos,
   });
-  core.debug(`Commit content built successfully: ${content}`);
+  // console.debug(`Commit content built successfully: ${content}`);
 
   await postWebhook({ ...params, core, reviewers });
   await postSlackMessage({
@@ -73,26 +77,24 @@ const run = async (params) => {
     reviewers,
     pullRequest,
   });
-
   if (!pullRequestId) return;
   await postComment({
     octokit,
     content,
     publishAs,
-    pullRequestId,
+    pullRequestId: pullRequest.id,
     currentBody: pullRequest.body,
   });
-  core.debug('Posted comment successfully');
+  console.debug('Posted comment successfully');
 };
 
 module.exports = async (params) => {
-  core.debug(`Params: ${JSON.stringify(params, null, 2)}`);
+  console.debug(`Params: ${JSON.stringify(params, null, 2)}`);
 
   const { githubToken, org, repos } = params;
   const octokit = github.getOctokit(githubToken);
-  const isSponsor = await checkSponsorship({ octokit, org, repos });
+  const isSponsor = true
   const telemetry = new Telemetry({ core, isSponsor, telemetry: params.telemetry });
-  if (isSponsor) core.info('Thanks for sponsoring this project! 💙');
 
   try {
     telemetry.start(params);

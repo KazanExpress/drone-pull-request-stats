@@ -4,7 +4,7 @@ const parseComments = (node) => ({
   ...node,
 });
 
-module.exports = ({ node: data }) => ({
-  ...data,
-  comments: (get(data, 'comments.nodes') || []).map(parseComments),
+module.exports = (data) => ({
+  id: get(data, 'repository.pullRequest.id'),
+  comments: (get(data, 'repository.pullRequest.comments.nodes') || []).map(parseComments),
 });

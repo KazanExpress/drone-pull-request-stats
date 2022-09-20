@@ -1,5 +1,3 @@
-const core = require('@actions/core');
-
 const SPONSORED_ACCOUNT = 'manuelmhtr';
 const DEFAULT_RESPONSE = { user: {} };
 
@@ -24,6 +22,6 @@ module.exports = ({
   .graphql(buildQuery(logins))
   .catch((error) => {
     const msg = `Error fetching sponsorships with logins: "${JSON.stringify(logins)}"`;
-    core.debug(new Error(`${msg}. Error: ${error}`));
+    console.debug(new Error(`${msg}. Error: ${error}`));
     return DEFAULT_RESPONSE;
   });

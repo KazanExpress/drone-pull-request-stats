@@ -7,8 +7,8 @@ class Telemetry {
   constructor({ core, isSponsor, telemetry }) {
     this.useTelemetry = !isSponsor || telemetry;
     this.tracker = this.useTelemetry ? buildTracker() : null;
-    if (!this.useTelemetry) core.debug('Telemetry disabled correctly');
-    if (!telemetry && !isSponsor) core.error('Disabling telemetry is a premium feature, available to sponsors.');
+    if (!this.useTelemetry) console.debug('Telemetry disabled correctly');
+    if (!telemetry && !isSponsor) console.error('Disabling telemetry is a premium feature, available to sponsors.');
   }
 
   start(params) {

@@ -18,12 +18,12 @@ module.exports = async ({
   const { webhook, channel } = slack || {};
 
   if (!webhook || !channel) {
-    core.debug(t('integrations.slack.logs.notConfigured'));
+    console.debug(t('integrations.slack.logs.notConfigured'));
     return;
   }
 
   if (!isSponsor) {
-    core.error(t('integrations.slack.errors.notSponsor'));
+    console.error(t('integrations.slack.errors.notSponsor'));
     return;
   }
 
@@ -35,7 +35,7 @@ module.exports = async ({
       iconUrl: t('table.icon'),
       username: t('table.title'),
     };
-    core.debug(t('integrations.slack.logs.posting', {
+    console.debug(t('integrations.slack.logs.posting', {
       params: JSON.stringify(params, null, 2),
     }));
     return postToSlack(params);
@@ -55,10 +55,10 @@ module.exports = async ({
   await chunks.reduce(async (promise, message) => {
     await promise;
     return send(message).catch((error) => {
-      core.error(t('integrations.slack.errors.requestFailed', { error }));
+      console.error(t('integrations.slack.errors.requestFailed', { error }));
       throw error;
     });
   }, Promise.resolve());
 
-  core.debug(t('integrations.slack.logs.success'));
+  console.debug(t('integrations.slack.logs.success'));
 };

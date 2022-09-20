@@ -11,7 +11,7 @@ module.exports = async ({
   periodLength,
 }) => {
   if (!webhook) {
-    core.debug(t('integrations.webhook.logs.notConfigured'));
+    console.debug(t('integrations.webhook.logs.notConfigured'));
     return;
   }
 
@@ -24,14 +24,14 @@ module.exports = async ({
 
   const params = { payload, webhook };
 
-  core.debug(t('integrations.webhook.logs.posting', {
+  console.debug(t('integrations.webhook.logs.posting', {
     params: JSON.stringify(params, null, 2),
   }));
 
   await postToWebhook({ payload, webhook }).catch((error) => {
-    core.error(t('integrations.webhook.errors.requestFailed', { error }));
+    console.error(t('integrations.webhook.errors.requestFailed', { error }));
     throw error;
   });
 
-  core.debug(t('integrations.webhook.logs.success'));
+  console.debug(t('integrations.webhook.logs.success'));
 };

@@ -116,3 +116,4 @@ out
 
 # Local test file
 .run.js
+env.sh
