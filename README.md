@@ -61,21 +61,29 @@ The possible inputs for this action are:
 
 **Minimal config**
 
-Add this to the file `.github/workflows/stats.yml` in your repo:
+Add this to the file `.drone.yml` in your repo:
 
 ```yml
-name: Pull Request Stats
+kind: pipeline
+name: pr-stats
+type: docker
 
-on:
-  pull_request:
-    types: [opened]
+trigger:
+  event:
+    - pull_request
+  branch:
+    - master
 
-jobs:
-  stats:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run pull request stats
-        uses: flowwer-dev/pull-request-stats@master
+steps:
+  - name: pull request stats
+    image: ghcr.io/kazanexpress/drone-pull-request-stats
+    settings:
+      github_token:
+        from_secret: github_token
+      period: '30'
+      limit: '100'
+      sort_by: 'COMMENTS'
+      charts: 'true'
 ```
 
 This config will:
@@ -100,25 +108,28 @@ and print a table like this:
 Add this to the file `.github/workflows/stats.yml`:
 
 ```yml
-name: Pull Request Stats
+kind: pipeline
+name: pr-stats
+type: docker
 
-on:
-  pull_request:
-    types: [opened]
+trigger:
+  event:
+    - pull_request
+  branch:
+    - master
 
-jobs:
-  stats:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run pull request stats
-        uses: flowwer-dev/pull-request-stats@master
-        with:
-          token: ${{ secrets.ADD_A_PERSONAL_ACCESS_TOKEN }}
-          organization: 'piedpiper'
-          period: 7
-          charts: true
-          disable-links: true
-          sort-by: 'COMMENTS'
+steps:
+  - name: pull request stats
+    image: ghcr.io/kazanexpress/drone-pull-request-stats
+    settings:
+      github_token:
+        from_secret: github_token
+      limit: '100'
+      sort_by: 'COMMENTS'
+      charts: 'true'
+      organization: 'piedpiper'
+      period: '7'
+      disable_links: 'true'
 ```
 
 This config will:
@@ -160,22 +171,25 @@ To configure the Slack, integration:
 Since it may be quite annoying to receive a Slack notification everytime someone creates a pull request, it is recommended to configure this action to be executed every while using the `schedule` trigger. For example, every monday at 9am UTC:
 
 ```yml
-name: Pull Request Stats
 
-on:
-  schedule:
-    - cron:  '0 9 * * 1'
+kind: pipeline
+name: pr-stats
+type: docker
 
-jobs:
-  stats:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run pull request stats
-        uses: flowwer-dev/pull-request-stats@master
-        with:
-          slack-channel: '#mystatschannel'
-          slack-webhook: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
-          # slack-webhook: ${{ secrets.SLACK_WEBHOOK }} You may want to store this value as a secret.
+trigger:
+  event:
+    - cron
+
+steps:
+  - name: pull request stats
+    image: ghcr.io/kazanexpress/drone-pull-request-stats
+    settings:
+      github_token:
+        from_secret: github_token
+      slack_channel: '#mystatschannel'
+      slack_webhook: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
+      # slack-webhook:
+        # from-secret: slack_webhook You may want to store this value as a secret.
 ```
 
 ## Troubleshooting
